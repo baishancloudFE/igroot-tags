@@ -32,19 +32,14 @@ export default class Tags extends Component {
 		const { value } = this.state 
 
 		if (this.isRadio) {
-			return options.map(item =>({
-				label: item.label,
-				value: item.value,
+			return options.map(item =>({...item, ...{
 				checked: (item.value === value)
-			}))
+			}}))
 		} else {
-			return options.map(item => (
-				{
-					label: item.label,
-					value: item.value,
+			return options.map(item =>({...item, ...{
 					checked: value.includes(item.value)
 				}
-			))
+			}))
 		}
 	}
 
