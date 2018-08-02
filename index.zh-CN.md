@@ -6,6 +6,7 @@ subtitle: 受控标签组件
 cols: 1
 ---
 
+
 # Tags 组件
 
 ## 何时使用
@@ -29,6 +30,7 @@ cols: 1
 | --- | --- | --- | --- |
 | style | 样式 | Object | - |
 | className | 扩展样式类名 | string Or array | - |
+| disalbed | 是否禁用状态，默认为 false | boolean | false |
 | defaultValue | 初始值 | boolean | false |
 | options | tags的选项，只支持label和value的形式 | array | - |
 | radio | 类型 | boolean | false |

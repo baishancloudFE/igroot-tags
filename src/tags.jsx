@@ -69,11 +69,11 @@ export default class Tags extends Component {
 	}
   
   render() {
-		const { disabled } = this.props 
+		const { disabled, className, style } = this.props 
 		const newOptions = this.getCheckableOptions() 
 
 		return (	
-      <div>
+      <div className={`igroot-tags ${className || ''}`} style={style}>
         {
           newOptions.map(tag => (
             <Tooltip title={tag.tip} key={tag.value}>
