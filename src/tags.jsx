@@ -1,123 +1,115 @@
-import React, { Component } from 'react';
-import { Tag } from 'igroot';
-const { CheckableTag } = Tag;
-const disable = { background: '#e6e6e6', border: '1px solid #d9d9d9', color: '#fff' }
-const activeDisable = { background: '#f7f7f7', border: '1px solid #d9d9d9', color: 'rgba(0, 0, 0, 0.25)' }
-class Tags extends Component {
-    constructor(props) {
-        super(props);
-        const value = this.props.value || this.props.radio !== undefined ? '' : [];
-        this.state = {
-            value: value,
-            options: this.options || []
-        };
+import React, { Component } from 'react'
+import { Tag, Tooltip } from 'igroot'
+
+const { CheckableTag } = Tag
+
+export default class Tags extends Component {
+  constructor(props) {
+		super(props)
+		const { defaultValue, radio } = this.props 
+		const value = defaultValue || (radio ? '' : [])
+
+		this.isRadio = !!radio
+    this.state = {
+			value
     }
+	}
+	
+	isRadio = false 
 
-    componentWillReceiveProps(nextProps) {
-        if ('value' in nextProps) {
-            const value = nextProps.value;
-            this.setState({ value })
-            this.readValue(value)
+  componentWillReceiveProps(nextProps) {
+    if ('value' in nextProps) {
+			const { value } = nextProps
+			const newValue = value || (this.isRadio ? '' : [])
+      this.setState({ 
+				value: newValue
+			})
+		}
+  }
 
+	getCheckableOptions = () => {
+		const { options = [] } =  this.props 
+		const { value } = this.state 
+
+		if (this.isRadio) {
+			return options.map(item =>({
+				label: item.label,
+				value: item.value,
+				checked: (item.value === value)
+			}))
+		} else {
+			return options.map(item => (
+				{
+					label: item.label,
+					value: item.value,
+					checked: value.includes(item.value)
+				}
+			))
+		}
+	}
+
+	handleChange = (tag, checked) => {
+		const { onChange, disabled } = this.props 
+		let { value = [] } = this.state 
+
+		if (disabled) return 
+
+		if (this.isRadio) {
+			value = tag.value 
+		} 
+
+		if (!this.isRadio && checked) {
+			value.push(tag.value)
+		}
+
+		if (!this.isRadio && !checked) {
+			value = value.filter(item => item !== tag.value)
+		}
+
+		this.setState({ 
+			value 
+		}, () => {
+			onChange && onChange(value)
+		})
+	}
+  
+  render() {
+		const { disabled } = this.props 
+		const newOptions = this.getCheckableOptions() 
+
+		return (	
+      <div>
+        {
+          newOptions.map(tag => (
+            <Tooltip title={tag.tip} key={tag.value}>
+							<CheckableTag
+								{...this.props}
+								key={tag.value}
+								checked={tag.checked}
+								onChange={(val) => this.handleChange(tag, val)}
+								style={disabled ? (tag.checked ? style.disable : style.activeDisable) : null}
+							>
+								{tag.label}
+							</CheckableTag>
+            </Tooltip>
+          ))
         }
-        if ('options' in nextProps) {
-            if (nextProps.options.length !== this.state.options.length)
-                this.setState({
-                    options: nextProps.options
-                })
-        }
-    }
-
-    readValue = (value) => {
-
-        this.state.options.map(option => {
-            option.checked = false
-            return option
-        })
-        if (value === undefined) {
-            this.setState({ options: this.state.options })
-            return false
-        }
-        if (this.props.radio) {
-            const option = this.state.options.find(option => option.value === value)
-            if (option !== undefined) { this.state.options.find(option => option.value === value).checked = true }
-        } else {
-            value.forEach(item => {
-                const option = this.state.options.find(option => option.value === item)
-                if (option !== undefined) {
-                    option.checked = true
-                }
-            })
-        }
-        this.setState({ options: this.state.options })
-    }
-
-    componentWillMount() {
-        const options = this.options || JSON.parse(JSON.stringify(this.props.options))
-        this.setState({
-            options: options.map(item => {
-                item.checked = false
-                return item
-            })
-        })
-    }
-    handleClick = (tag, val) => {
-        if (this.props.disabled) return
-        let value = []
-        const options = this.state.options
-        tag.checked = val
-        if (this.props.radio) {
-            value = val ? tag.value : undefined
-            options.map(option => {
-                option.checked = false
-                return option
-            }).find(option => option.value === tag.value).checked = val
-        } else {
-            options.forEach(option => {
-                if (option.checked) {
-                    value.push(option.value)
-                }
-            })
-        }
-        this.setState({ options, value })
-        this.triggerChange(value)
-
-    }
-
-    radioClick = (e) => {
-        this.setState({
-            value: e.target.value
-        })
-        this.triggerChange(e.target.value)
-    }
-
-    triggerChange = (changedValue) => {
-        const onChange = this.props.onChange;
-        if (onChange) {
-            onChange(changedValue);
-        }
-    }
-    render() {
-        return (
-            <div>
-                {
-                    this.state.options.map(tag => {
-                        return <CheckableTag
-                            {...this.props}
-                            key={tag.value}
-                            onChange={(val) => this.handleClick(tag, val)}
-                            checked={tag.checked}
-                            style={this.props.disabled ? (tag.checked ? disable : activeDisable) : null}
-                        >
-                            {tag.label}
-                        </CheckableTag>
-                    }
-
-                    )
-                }
-            </div>
-        );
-    }
+      </div>
+    )
+  }
 }
 
-export default Tags;
+const style = {
+	disable: { 
+		background: '#e6e6e6', 
+		border: '1px solid #d9d9d9', 
+		color: '#fff',
+		cursor: 'not-allowed'
+	},
+	activeDisable: { 
+		background: '#f7f7f7', 
+		border: '1px solid #d9d9d9', 
+		color: 'rgba(0, 0, 0, 0.25)',
+		cursor: 'not-allowed'
+	}
+}
